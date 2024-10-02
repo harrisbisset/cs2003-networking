@@ -1,6 +1,9 @@
-package com;
-import com.responses.BasicProtocol;
-import com.responses.IProtocol;
+package com.server;
+
+import com.server.responses.BasicProtocol;
+import com.server.responses.IProtocol;
+import com.util.ResultError;
+import com.util.SimpleUtil;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;

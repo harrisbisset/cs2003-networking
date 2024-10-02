@@ -1,6 +1,6 @@
 #!bin/bash
 
-# Usage: bash server.sh [args]
-javac -d ./bin $(find ./src/com/* | grep .java) && \
+# Usage: bash server.sh <IPAddress> <port>
+javac -d ./bin $(find ./src/com/server/* ./src/com/util/* | grep .java) && \
     cd ./bin && \
     java com/SimpleServer $@

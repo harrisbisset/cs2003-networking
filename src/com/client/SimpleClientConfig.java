@@ -1,4 +1,6 @@
-package com;
+package com.client;
+
+import com.util.ResultError;
 
 public class SimpleClientConfig {
     private final String address;

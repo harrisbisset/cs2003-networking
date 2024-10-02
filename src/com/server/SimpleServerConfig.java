@@ -1,5 +1,7 @@
-package com;
-import com.responses.IProtocol;
+package com.server;
+
+import com.server.responses.IProtocol;
+import com.util.ResultError;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 

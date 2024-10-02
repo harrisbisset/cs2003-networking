@@ -1,4 +1,4 @@
-package com.responses;
+package com.server.responses;
 import java.util.Optional;
 
 public class BasicProtocol implements IProtocol {
