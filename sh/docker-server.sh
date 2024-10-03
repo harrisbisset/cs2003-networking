@@ -8,19 +8,27 @@ if [ "$#" -ne 1 ]; then
     exit 1
 fi
 
+# stop and running containers with "simple-server-build" image name
+rm=$(docker stop $(docker ps -a -q --filter "ancestor=simple-server-build") && /
+    docker rm $(docker ps -a -q --filter "ancestor=simple-server-build"))
+if [ $? -ne 0 ]; then
+    echo "clean failed"
+    exit 2
+fi
+
 build=$(docker --debug build --tag simple-server-build .)
 if [ $? -ne 0 ]; then
     echo "build failed"
-    exit 2
+    exit 3
 fi
 
 run=$(docker run -d --name simple-server -p $1:$1 simple-server-build)
 if [ $? -ne 0 ]; then
     echo "run failed"
-    exit 3
+    exit 4
 fi
 
-# if fail
+# if fail, use to debug:
 # docker build --no-cache --progress plain --tag simple-server-build .
 
 # if fail due to memory issues
