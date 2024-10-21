@@ -14,7 +14,7 @@ if [ "$1" == "server" ]; then
             rm MANIFEST.MF)
     exit $result
 
-elif [ "$1" == "server" ]; then
+elif [ "$1" == "client" ]; then
     result=$(javac -d ./bin $(find ./src/com/client/* ./src/com/util/* | grep .java) && \
             echo Main-Class: com.server.SimpleClient > MANIFEST.MF && \
             jar -cfm SimpleClient.jar MANIFEST.MF -C ./bin . && \

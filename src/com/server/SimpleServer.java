@@ -1,6 +1,6 @@
 package com.server;
 
-import com.server.responses.BasicProtocol;
+import com.server.responses.AdvancedProtocol;
 import com.server.responses.IProtocol;
 import com.util.ResultError;
 import com.util.SimpleUtil;
@@ -34,7 +34,7 @@ public class SimpleServer implements AutoCloseable {
         int port            = SimpleUtil.getPort(args[1]);
 
         ResultError<SimpleServerConfig> config = SimpleServerConfig.
-            New(port, new BasicProtocol()).
+            New(port, new AdvancedProtocol()).
             Address(address).
             Build();
 
@@ -66,8 +66,6 @@ public class SimpleServer implements AutoCloseable {
         while (true) {
             Socket socket = this.serverSocket.accept(); // new conn request
 
-            this.closeDeadConns();
-
             // if too many connections
             if (this.clientCount >= this.threadLimit) {
                 System.out.println("cannot exceed thread limit");
@@ -84,25 +82,13 @@ public class SimpleServer implements AutoCloseable {
             HandleSimpleClient conn = new HandleSimpleClient(
                 this, 
                 socket, 
-                this.messageProtocol, 
+                this.messageProtocol.generic(), 
                 this.clientCount
             );
 
             new Thread(conn).start();
             this.connPool.add(conn);
-
             this.clientCount++;
-            this.checkExpectedThreads(); // prints out error if there are more threads than expected
-        }
-    }
-
-    public synchronized void closeDeadConns() {
-        for (HandleSimpleClient hsc : this.connPool) {
-            if (hsc == null) {
-                this.connPool.remove(hsc);
-                this.clientCount--;
-                System.out.println("removed dead client conn");
-            }
         }
     }
 
@@ -117,16 +103,6 @@ public class SimpleServer implements AutoCloseable {
         }
         return false;
     }
-
-    public synchronized void checkExpectedThreads() {
-        if (Thread.activeCount() != this.clientCount) {
-            System.err.printf(
-                "unexpected thread count\nexpected: %d\nactual: %d\n",
-                this.clientCount,
-                Thread.activeCount()
-            );
-        }
-    }
     
     @Override
     public synchronized void close() throws Exception {
@@ -138,7 +114,6 @@ public class SimpleServer implements AutoCloseable {
         private final Socket socket;
         private final IProtocol messageProtocol;
         private final int value;
-
 
         public HandleSimpleClient(SimpleServer server, Socket socket, IProtocol messageProtocol, int value) {
             this.server = server;
@@ -154,23 +129,24 @@ public class SimpleServer implements AutoCloseable {
         @Override
         public synchronized void run() {
             try {
-                BufferedReader input = new BufferedReader(new InputStreamReader(this.socket.getInputStream()));
-                PrintWriter output = new PrintWriter(this.socket.getOutputStream(), true);
 
-                String line;
-                while ((line = input.readLine()) != null) {
-                    String message = messageProtocol.Message(line);
-                    output.write(message);
-                    output.flush();
-                    System.out.println(message + ": from server");
-                }    
-                
+                try (this.socket) {
+                    BufferedReader input = new BufferedReader(new InputStreamReader(this.socket.getInputStream()));
+                    PrintWriter output = new PrintWriter(this.socket.getOutputStream(), true);
+                    
+                    String line;
+                    while ((line = input.readLine()) != null && !messageProtocol.endSession()) {
+                        String message = messageProtocol.message(line);
+                        output.println(message);
+                        output.flush();
+                    }
+                }
                 System.out.println("closing connection");
-
+                
             } catch (IOException ex) {
                 System.err.println(ex);
-                this.server.closeConn(this.value);
             }
+            this.server.closeConn(this.value);
         }
     }
 }

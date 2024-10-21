@@ -1,14 +1,21 @@
 package com.server.responses;
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.Month;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Optional;
 
-public class BasicProtocol implements IProtocol {
+public class AdvancedProtocol implements IProtocol {
     private int count = 0;
     private final int maxCount = Response.values().length;
-
+    private final ScheduleData schedule = new ScheduleData();
+    
     @Override
-    public BasicProtocol generic() {
-        return new BasicProtocol();
+    public AdvancedProtocol generic() {
+        return new AdvancedProtocol();
     }
 
     @Override
@@ -21,7 +28,13 @@ public class BasicProtocol implements IProtocol {
 
         Optional<Response> triggerMessage = Response.getReponseByState(this.count, msg);
         if (triggerMessage.isPresent()) {
-            String responseString = triggerMessage.get().getValue();
+            String responseString;
+
+            if (triggerMessage.get() == Response.WHERE_LECTURE) {
+                responseString =  this.schedule.getLocation();
+            } else {
+                responseString = triggerMessage.get().getValue();
+            }
 
             this.count++;
             if (this.count > maxCount) {
@@ -83,6 +96,37 @@ public class BasicProtocol implements IProtocol {
                 }
             }
             return Optional.empty();
+        }
+    }
+
+    class ScheduleData {
+        private final HashMap<DayOfWeek, String> dayLocation = new HashMap<>();
+        private final ArrayList<LocalDate> holidays = new ArrayList<>();
+
+        public ScheduleData() {
+            this.dayLocation.put(DayOfWeek.MONDAY, "Jack Cole Building");
+            this.dayLocation.put(DayOfWeek.TUESDAY, "School II");
+            this.dayLocation.put(DayOfWeek.THURSDAY, "Jack Cole Building");
+
+            // independent learning week
+            this.holidays.add(LocalDate.of(2024, Month.OCTOBER, 21));
+            this.holidays.add(LocalDate.of(2024, Month.OCTOBER, 22));
+            this.holidays.add(LocalDate.of(2024, Month.OCTOBER, 23));
+            this.holidays.add(LocalDate.of(2024, Month.OCTOBER, 24));
+            this.holidays.add(LocalDate.of(2024, Month.OCTOBER, 25));
+        }
+
+        public String getLocation() {
+            LocalDateTime today = LocalDateTime.now();
+
+            if (
+                !this.dayLocation.containsKey(today.getDayOfWeek()) || 
+                this.holidays.contains(LocalDate.of(today.getYear(), today.getMonth(), today.getDayOfMonth()))
+            ) {
+                return "there is no class today";
+            }
+            
+            return this.dayLocation.get(today.getDayOfWeek());
         }
     }
 }

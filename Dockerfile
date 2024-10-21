@@ -2,7 +2,7 @@
 
 # Build
 FROM amazoncorretto:17-alpine-jdk AS build-stage
-COPY ./lib ./src /server/
+COPY ./lib ./src ./res /server/
 WORKDIR /server
 
 #compile & create jar
@@ -13,7 +13,7 @@ RUN javac -d ./bin $(find ./com/server/* ./com/util/* | grep .java) && \
 
 # Deploy
 FROM amazoncorretto:17-alpine-jdk AS deploy-stage
-WORKDIR /server
-COPY --from=build-stage /server/SimpleServer.jar ./
+WORKDIR /server 
+COPY --from=build-stage /server/SimpleServer.jar /server/res/schedule.txt ./
 ENTRYPOINT ["java", "-jar", "SimpleServer.jar", "127.0.0.0", "1026"]
 EXPOSE 1026

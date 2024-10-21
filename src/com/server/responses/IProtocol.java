@@ -1,5 +1,7 @@
 package com.server.responses;
 
 public interface IProtocol {
-    public String Message(String msg);
+    public IProtocol generic();
+    public String message(String msg);
+    public boolean endSession();
 }
