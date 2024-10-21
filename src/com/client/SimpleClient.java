@@ -50,9 +50,9 @@ public class SimpleClient implements AutoCloseable {
         this.addr = config.getAddress();
         this.port = config.getPort();
 
-        this.socket = new Socket(this.addr, this.port);
-        this.output = new PrintWriter(this.socket.getOutputStream(), true);
-        this.input = new BufferedReader(new InputStreamReader(this.socket.getInputStream()));   
+        this.socket   = new Socket(this.addr, this.port);
+        this.output   = new PrintWriter(this.socket.getOutputStream(), true);
+        this.input    = new BufferedReader(new InputStreamReader(this.socket.getInputStream()));   
         this.stdInput = new BufferedReader(new InputStreamReader(System.in));
     }
 

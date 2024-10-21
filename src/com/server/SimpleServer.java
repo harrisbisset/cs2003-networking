@@ -129,7 +129,6 @@ public class SimpleServer implements AutoCloseable {
         @Override
         public synchronized void run() {
             try {
-
                 try (this.socket) {
                     BufferedReader input = new BufferedReader(new InputStreamReader(this.socket.getInputStream()));
                     PrintWriter output = new PrintWriter(this.socket.getOutputStream(), true);
